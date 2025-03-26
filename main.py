@@ -19,6 +19,34 @@ X=
 函数值F=
 =============================
 """
+class Worker(QThread):
+    log_signal = pyqtSignal(str)  # 定义信号用于更新UI
+
+    def __init__(self, my_class):
+        super().__init__()
+        self.my_class = my_class
+
+    def run(self):
+        # 运行my_method并且通过信号发送log更新到UI
+        self.my_class.my_method()
+        self.log_signal.emit(self.my_class.log)
+
+class LogWindow(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        # 设置UI组件
+        self.text_edit = QTextEdit(self)
+        self.text_edit.setReadOnly(True)  # 让文本框只读
+
+        # 布局
+        layout = QVBoxLayout(self)
+        layout.addWidget(self.text_edit)
+
+        self.setLayout(layout)
+        self.setWindowTitle("Log Viewer")
+        self.setGeometry(100, 100, 400, 300)
+
 class ProblemType(Enum):
     oneDimension = 0
     multiDimension = 1
