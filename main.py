@@ -277,7 +277,7 @@ class MyApp(QWidget):
             f.write(self.problem.read_logs())
         import os
         path = os.getcwd() + '\out.txt'
-        QMessageBox(self , "info" , f"已保存log到{path}")
+        QMessageBox.information(self , "info" , f"已保存log到{path}")
 
     def run_optimization(self):
         self.problem.solve(self.method)
