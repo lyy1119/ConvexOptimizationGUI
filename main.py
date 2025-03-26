@@ -1,5 +1,26 @@
-from convexOptimization import *
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout , QLabel, QPushButton, QLineEdit, QMessageBox , QDialog , QRadioButton , QGridLayout
+from convexOptimization import MethodType , OnedimensionOptimization , MultidimensionOptimization
+from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout , QLabel, QPushButton, QLineEdit, QMessageBox , QDialog , QRadioButton , QGridLayout , QTextEdit , QButtonGroup
+from enum import Enum
+
+defaultInputText = """函数：
+初始点： 
+epsilon x: 
+epsilon f: 
+maxStep: 
+S: 
+"""
+defaultOutPutText = """=============================
+优化结果
+迭代次数：
+X=
+
+
+函数值F=
+=============================
+"""
+class ProblemType(Enum):
+    oneDimension = 0
+    multiDimension = 1
 
 class InputFunction(QDialog):
     """ 优化问题输入窗口 """
@@ -8,6 +29,32 @@ class InputFunction(QDialog):
 
         self.setWindowTitle("输入窗口")
         self.setGeometry(100, 100, 300, 150)
+
+        # 一维优化方法
+        onedimensonMethodGroup = QButtonGroup(self)
+        self.goldenSection = QRadioButton("黄金分割法")
+        onedimensonMethodGroup.addButton(self.goldenSection)
+        self.quadraticInterpolation = QRadioButton("二次插值法")
+        onedimensonMethodGroup.addButton(self.quadraticInterpolation)
+        self.oneDimensionButton = [self.goldenSection , self.quadraticInterpolation]
+        # 多维优化方法
+        multiDimensionMethodGroup = QButtonGroup(self)
+        self.coordinateDescent = QRadioButton("坐标轮换法")
+        multiDimensionMethodGroup.addButton(self.coordinateDescent)
+        self.gradientDescent = QRadioButton("梯度法")
+        multiDimensionMethodGroup.addButton(self.gradientDescent)
+        self.dampedNewton = QRadioButton("阻尼牛顿法")
+        multiDimensionMethodGroup.addButton(self.dampedNewton)
+        self.conjugateDirection = QRadioButton("共轭方向法")
+        multiDimensionMethodGroup.addButton(self.conjugateDirection)
+        self.powell = QRadioButton("powell法")
+        multiDimensionMethodGroup.addButton(self.powell)
+        self.dfp = QRadioButton("dfp")
+        multiDimensionMethodGroup.addButton(self.dfp)
+        self.bfgs = QRadioButton("bfgs")
+        multiDimensionMethodGroup.addButton(self.bfgs)
+        self.mutiDimensionButton = [self.coordinateDescent , self.gradientDescent , self.dampedNewton , self.conjugateDirection , self.powell , self.dfp , self.bfgs]
+
 
 
         # 设置主窗口的布局
@@ -19,9 +66,14 @@ class InputFunction(QDialog):
         layout.addWidget(self.lable1)
 
         # 创建单选框
+        self.typeGroup = QButtonGroup()
         buttonLayout = QHBoxLayout()
         self.radio_enable = QRadioButton("一维优化", self)
+        self.radio_enable.toggled.connect(self.change_layout)
         self.radio_disable = QRadioButton("多维优化", self)
+        self.radio_disable.toggled.connect(self.change_layout)
+        self.typeGroup.addButton(self.radio_disable)
+        self.typeGroup.addButton(self.radio_enable)
         # 连接单选框的点击事件到相应的槽函数
         self.radio_enable.clicked.connect(self.enable_s_input)
         self.radio_disable.clicked.connect(self.disable_s_input)
@@ -30,13 +82,11 @@ class InputFunction(QDialog):
         buttonLayout.addWidget(self.radio_disable)
         layout.addLayout(buttonLayout)
 
-
-
         # 用于创建优化问题对象的参数
         self.lable2 = QLabel("输入参数:")
         layout.addWidget(self.lable2)
 
-        gridLayout = QGridLayout()
+        gridLayout = QGridLayout(self)
         layout.addLayout(gridLayout)
 
         # 函数
@@ -81,18 +131,76 @@ class InputFunction(QDialog):
         self.maxStep.setPlaceholderText("默认1000")
         self.maxStep.setText("1000")
         gridLayout.addWidget(self.maxStep , 5 , 1)
-        
+
         # 默认情况下启用文本框，设置单选框状态
         self.sInputTextbox.setEnabled(True)
         self.radio_enable.setChecked(True)
-
+        # 方法选择框
+        methodLable = QLabel("优化方法")
+        layout.addWidget(methodLable)
+        # 放入布局
+        for i in self.oneDimensionButton:
+            layout.addWidget(i)
+        for i in self.mutiDimensionButton:
+            layout.addWidget(i)
+        # 添加按钮
+        self.change_layout()
         # 确定按钮
         self.ok = QPushButton("确认" , self)
         self.ok.clicked.connect(self.check_input)
         layout.addWidget(self.ok)
 
-    def return_input(self):
-        pass
+    def change_layout(self):
+        if self.radio_enable.isChecked():
+            # 显示一维
+            for i in self.oneDimensionButton:
+                i.setVisible(True)
+            for i in self.mutiDimensionButton:
+                i.setVisible(False)
+        else:
+            # 显示二维
+            for i in self.oneDimensionButton:
+                i.setVisible(False)
+            for i in self.mutiDimensionButton:
+                i.setVisible(True)
+
+    def get_input(self):
+        method = None
+        if self.radio_enable.isChecked():
+            # 代表是一维优化
+            pType = ProblemType.oneDimension
+            s = list(map(float , self.sInputTextbox.text().split()))
+            if self.goldenSection.isChecked():
+                method = MethodType.goldenSection
+            else:
+                method = MethodType.quadraticInterpolation
+        else:
+            pType = ProblemType.multiDimension
+            s = None
+            if self.coordinateDescent.isChecked():
+                method = MethodType.coordinateDescent
+            elif self.gradientDescent.isChecked():
+                method = MethodType.gradientDescent
+            elif self.dampedNewton.isChecked():
+                method = MethodType.dampedNewton
+            elif self.conjugateDirection.isChecked():
+                method = MethodType.conjugateDirection
+            elif self.powell.isChecked():
+                method = MethodType.powell
+            elif self.dfp.isChecked():
+                method = MethodType.dfp
+            elif self.bfgs.isChecked():
+                method = MethodType.bfgs
+        return {
+            "type" : pType,
+            "function" : self.function.text(),
+            "x0" : list(map(float , self.x0.text().split())),
+            "epsilonx" : float(self.epsilonx.text().strip()),
+            "epsilonf" : float(self.epsilonf.text().strip()),
+            "s" :s,
+            "maxStep": int(self.maxStep.text()),
+            "method" : method
+        }
 
     def check_input(self):
         if not self.function.text().strip():
@@ -117,16 +225,11 @@ class InputFunction(QDialog):
     def disable_s_input(self):
         self.sInputTextbox.setDisabled(True)
 
-
-    def get_text(self):
-        """ 返回输入的文本 """
-        return self.input_field.text()
-
 class MyApp(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("固定比例窗口")
-        self.resize(400, 300)  # 初始大小
+        self.resize(600, 450)  # 初始大小
         self.aspect_ratio = 4 / 3  # 设定固定比例 (4:3)
 
         self.initUI()
@@ -137,68 +240,70 @@ class MyApp(QWidget):
         布局设计
         '''
         layout = QVBoxLayout()
-        self.oneDimensionInputButton = QPushButton("输入优化问题", self)
-        self.oneDimensionInputButton.clicked.connect(self.show_input_function_dialog)  # 绑定点击事件
-        layout.addWidget(self.oneDimensionInputButton)
-        # 显示函数
-        self.function_label = QLabel("F(X)=")
-        layout.addWidget(self.function_label)
+        self.InputButton = QPushButton("输入优化问题", self)
+        self.InputButton.clicked.connect(self.get_input_function_dialog)  # 绑定点击事件
+        layout.addWidget(self.InputButton)
 
-        self.label = QLabel("输入参数:")
-        layout.addWidget(self.label)
+        self.inpuLable = QLabel("输入模型:")
+        layout.addWidget(self.inpuLable)
 
-        self.input_text = QLineEdit(self)
-        self.input_text.setPlaceholderText("字符串")
-        layout.addWidget(self.input_text)
+        self.inputInfo = QTextEdit(self)
+        self.inputInfo.setReadOnly(True)
+        self.inputInfo.setText(defaultInputText)
+        layout.addWidget(self.inputInfo)
 
-        self.input_list = QLineEdit(self)
-        self.input_list.setPlaceholderText("列表(逗号分隔)")
-        layout.addWidget(self.input_list)
+        # 结果
+        self.outputInfo = QTextEdit(self)
+        self.outputInfo.setReadOnly(True)
+        self.outputInfo.setText(defaultOutPutText)
+        layout.addWidget(self.outputInfo)
 
-        self.input_num1 = QLineEdit(self)
-        self.input_num1.setPlaceholderText("浮点数1")
-        layout.addWidget(self.input_num1)
-
-        self.input_num2 = QLineEdit(self)
-        self.input_num2.setPlaceholderText("浮点数2")
-        layout.addWidget(self.input_num2)
-
-
-
-        self.result_label = QLabel("结果:")
-        layout.addWidget(self.result_label)
-
-
-
-
+        # 优化按钮
+        self.optimizeButton = QPushButton("优化")
+        self.optimizeButton.clicked.connect(self.run_optimization)
+        layout.addWidget(self.optimizeButton)
 
         self.setLayout(layout)
-        self.setWindowTitle("MyClass GUI")
+        self.setWindowTitle("无约束凸优化")
 
-    def create_instance(self):
-        try:
-            text = self.input_text.text()
-            values = list(map(float, self.input_list.text().split(',')))
-            num1 = float(self.input_num1.text())
-            num2 = float(self.input_num2.text())
-            self.my_instance = MultidimensionOptimization(text, values, num1, num2)
-            QMessageBox.information(self, "Success", "实例创建成功！")
-        except ValueError:
-            QMessageBox.critical(self, "Error", "请输入正确格式的数据！")
+    def run_optimization(self):
+        self.problem.solve(self.method)
+        # 展示
+        self.outputInfo.setText(f"{self.problem.res}")
 
     def call_method(self, method_name):
         if self.my_instance:
             result = getattr(self.my_instance, method_name)()
             self.result_label.setText(f"结果: {result}")
     
-    def show_input_function_dialog(self):
+    def get_input_function_dialog(self):
         '''
         调用窗口，输入函数
         '''
         dialog = InputFunction(self)
         if dialog.exec():
-            text = dialog.get_text()
-            self.function_label.setText(f"{text}")  # 更新主窗口的文本
+            input = dialog.get_input()
+            # 初始化self.problem
+            t = input["type"]
+            function = input["function"]
+            x0 = input["x0"]
+            epsilonx = input["epsilonx"]
+            epsilonf = input["epsilonf"]
+            s = input["s"]
+            self.method = input["method"]
+            maxStep = input["maxStep"]
+            if t == ProblemType.oneDimension:
+                self.problem = OnedimensionOptimization(function , x0 , s , epsilonx , epsilonf , maxStep)
+            else:
+                self.problem = MultidimensionOptimization(function , x0 , epsilonx , epsilonf , maxStep)
+            # 合成信息
+            inputInfo = f"函数：{self.problem.function}\n初始点：\n{self.problem.x0}\nepsilon x：{epsilonx}\nepsilon f：{epsilonf}\nmaxStep：{maxStep}"
+            if t == ProblemType.oneDimension:
+                inputInfo += f"\nS：\n{self.problem.s}"
+            # 写入
+            #inputInfo += f"\nmethod："
+            #inputInfo += f"{}"
+            self.inputInfo.setText(inputInfo)
 
     def resizeEvent(self, event):
         """ 监听窗口调整事件，并强制窗口保持固定比例 """
