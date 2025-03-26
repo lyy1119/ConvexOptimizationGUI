@@ -1,6 +1,7 @@
 from convexOptimization import MethodType , OnedimensionOptimization , MultidimensionOptimization
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout , QLabel, QPushButton, QLineEdit, QMessageBox , QDialog , QRadioButton , QGridLayout , QTextEdit , QButtonGroup
 from enum import Enum
+from PyQt6.QtCore import Qt, QThread, pyqtSignal
 
 defaultInputText = """函数：
 初始点： 
@@ -259,12 +260,24 @@ class MyApp(QWidget):
         layout.addWidget(self.outputInfo)
 
         # 优化按钮
+        buttonLayout = QHBoxLayout()
         self.optimizeButton = QPushButton("优化")
         self.optimizeButton.clicked.connect(self.run_optimization)
-        layout.addWidget(self.optimizeButton)
+        buttonLayout.addWidget(self.optimizeButton)
+        self.saveLogButton = QPushButton("导出log")
+        self.saveLogButton.clicked.connect(self.save_log)
+        buttonLayout.addWidget(self.saveLogButton)
+        layout.addLayout(buttonLayout)
 
         self.setLayout(layout)
         self.setWindowTitle("无约束凸优化")
+
+    def save_log(self):
+        with open("out.txt" , "w") as f:
+            f.write(self.problem.read_logs())
+        import os
+        path = os.getcwd() + '\out.txt'
+        QMessageBox(self , "info" , f"已保存log到{path}")
 
     def run_optimization(self):
         self.problem.solve(self.method)
