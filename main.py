@@ -1,5 +1,5 @@
 from convexOptimization import *
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QPushButton, QLineEdit, QMessageBox , QDialog , QRadioButton
+from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout , QLabel, QPushButton, QLineEdit, QMessageBox , QDialog , QRadioButton , QGridLayout
 
 class InputFunction(QDialog):
     """ 优化问题输入窗口 """
@@ -19,27 +19,106 @@ class InputFunction(QDialog):
         layout.addWidget(self.lable1)
 
         # 创建单选框
+        buttonLayout = QHBoxLayout()
         self.radio_enable = QRadioButton("一维优化", self)
         self.radio_disable = QRadioButton("多维优化", self)
         # 连接单选框的点击事件到相应的槽函数
         self.radio_enable.clicked.connect(self.enable_s_input)
         self.radio_disable.clicked.connect(self.disable_s_input)
         # 添加到布局
-        layout.addWidget(self.radio_enable)
-        layout.addWidget(self.radio_disable)
+        buttonLayout.addWidget(self.radio_enable)
+        buttonLayout.addWidget(self.radio_disable)
+        layout.addLayout(buttonLayout)
 
 
 
-        # 
+        # 用于创建优化问题对象的参数
         self.lable2 = QLabel("输入参数:")
         layout.addWidget(self.lable2)
 
+        # gridLayout = gridLayout()
+        # layout.addLayout(gridLayout)
+
+        # 函数
+        functionLayout = QHBoxLayout()
+        functionLable = QLabel("函数")
+        functionLayout.addWidget(functionLable)
+        self.function = QLineEdit(self)
+        self.function.setPlaceholderText("字符串")
+        functionLayout.addWidget(self.function)
+        layout.addLayout(functionLayout)
+
+        # x0
+        x0Layout = QHBoxLayout()
+        x0Lable = QLabel("起始点X0")
+        x0Layout.addWidget(x0Lable)
+        self.x0 = QLineEdit(self)
+        self.x0.setPlaceholderText("空格分隔  1.0 1.0")
+        x0Layout.addWidget(self.x0)
+        layout.addLayout(x0Layout)
+
+        # epslionx
+        epXLayout = QHBoxLayout()
+        epXLable = QLabel("epsilon x")
+        epXLayout.addWidget(epXLable)
+        self.epsilonx = QLineEdit(self)
+        self.epsilonx.setPlaceholderText("0.01")
+        epXLayout.addWidget(self.epsilonx)
+        layout.addLayout(epXLayout)
+
+        # epsilonf
+        epFLayout = QHBoxLayout()
+        epFLable = QLabel("epsilon f")
+        epFLayout.addWidget(epFLable)
+        self.epsilonf = QLineEdit(self)
+        self.epsilonf.setPlaceholderText("0.01")
+        epFLayout.addWidget(self.epsilonf)
+        layout.addLayout(epFLayout)
+
+        # 搜索方向
+        sLayout = QHBoxLayout()
+        sLable = QLabel("搜索方向S")
+        sLayout.addWidget(sLable)
         self.sInputTextbox = QLineEdit(self)
-        self.sInputTextbox.setPlaceholderText("搜索方向s 逗号分隔")
-        layout.addWidget(self.sInputTextbox)
-        # 默认情况下禁用文本框
+        self.sInputTextbox.setPlaceholderText("空格分隔 1.2 1.2")
+        sLayout.addWidget(self.sInputTextbox)
+        layout.addLayout(sLayout)
+        
+        # 最大步长
+        maxStepLayout = QHBoxLayout()
+        self.maxStepLable = QLabel("最大迭代次数")
+        maxStepLayout.addWidget(self.maxStepLable)
+        self.maxStep = QLineEdit(self)
+        self.maxStep.setPlaceholderText("默认1000")
+        self.maxStep.setText("1000")
+        maxStepLayout.addWidget(self.maxStep)
+        layout.addLayout(maxStepLayout)
+        
+        # 默认情况下启用文本框，设置单选框状态
         self.sInputTextbox.setEnabled(True)
         self.radio_enable.setChecked(True)
+
+        # 确定按钮
+        self.ok = QPushButton("确认")
+        self.ok.clicked.connect(self.accept)
+        layout.addWidget(self.ok)
+
+    def return_input(self):
+        pass
+
+    def check_input(self):
+        if not self.function.text.strip():
+            self.error_label.setText("输入函数为空!")
+        elif not self.x0.text.strip():
+            self.error_label.setText("输入初始点为空!")
+        elif not self.epsilonx.text.strip():
+            self.error_label.setText("输入epsilon x为空!")
+        elif not self.epsilonf.text.strip():
+            self.error_label.setText("输入epsilon f为空!")
+        elif self.radio_enable.isChecked() and (not self.sInputTextbox.text.strip()):
+            self.error_label.setText("已选择一维优化模型，但是输入搜索方向为空!")
+        elif not self.maxStep.text.strip():
+            self.error_label.setText("输入最大迭代次数为空!")
 
 
     def enable_s_input(self):
