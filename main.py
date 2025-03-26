@@ -20,16 +20,20 @@ X=
 =============================
 """
 class Worker(QThread):
-    log_signal = pyqtSignal(str)  # 定义信号用于更新UI
+    log_signal = pyqtSignal(str)  # 用于实时更新log
+    result_signal = pyqtSignal(str)  # 用于传递最终结果
 
-    def __init__(self, my_class):
+    def __init__(self, my_class, method):
         super().__init__()
         self.my_class = my_class
+        self.method = method
 
     def run(self):
-        # 运行my_method并且通过信号发送log更新到UI
-        self.my_class.my_method()
-        self.log_signal.emit(self.my_class.log)
+        # 执行solve方法，模拟优化过程
+        self.my_class.solve(self.method)
+        self.log_signal.emit(self.my_class.logs)  # 发射log
+        self.result_signal.emit(str(self.my_class.res))  # 发射最终结果
+
 
 class LogWindow(QDialog):
     def __init__(self):
@@ -290,7 +294,7 @@ class MyApp(QWidget):
         # 优化按钮
         buttonLayout = QHBoxLayout()
         self.optimizeButton = QPushButton("优化")
-        self.optimizeButton.clicked.connect(self.run_optimization)
+        self.optimizeButton.clicked.connect(self.start_optimization)
         buttonLayout.addWidget(self.optimizeButton)
         self.saveLogButton = QPushButton("导出log")
         self.saveLogButton.clicked.connect(self.save_log)
@@ -301,7 +305,7 @@ class MyApp(QWidget):
         self.setWindowTitle("无约束凸优化")
 
     def save_log(self):
-        with open("out.txt" , "w") as f:
+        with open("out.txt" , "w" , encoding="utf-8") as f:
             f.write(self.problem.read_logs())
         import os
         path = os.getcwd() + '\out.txt'
@@ -311,7 +315,24 @@ class MyApp(QWidget):
         self.problem.solve(self.method)
         # 展示
         self.outputInfo.setText(f"{self.problem.res}")
+    def start_optimization(self):
+        # 创建并显示LogWindow窗口
+        self.log_window = LogWindow()
+        self.log_window.show()
 
+        # 创建并启动后台线程执行优化过程
+        self.worker = Worker(self.problem, method=self.method)
+        self.worker.log_signal.connect(self.update_log)  # 连接log更新槽
+        self.worker.result_signal.connect(self.display_result)  # 连接结果显示槽
+        self.worker.start()  # 启动线程
+
+    def update_log(self, log):
+        # 更新LogWindow中的内容
+        self.log_window.text_edit.setText(log)
+
+    def display_result(self, result):
+        # 显示最终结果
+        self.outputInfo.setText(result)
     def call_method(self, method_name):
         if self.my_instance:
             result = getattr(self.my_instance, method_name)()
