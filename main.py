@@ -36,89 +36,79 @@ class InputFunction(QDialog):
         self.lable2 = QLabel("输入参数:")
         layout.addWidget(self.lable2)
 
-        # gridLayout = gridLayout()
-        # layout.addLayout(gridLayout)
+        gridLayout = QGridLayout()
+        layout.addLayout(gridLayout)
 
         # 函数
-        functionLayout = QHBoxLayout()
         functionLable = QLabel("函数")
-        functionLayout.addWidget(functionLable)
+        gridLayout.addWidget(functionLable , 0 , 0)
         self.function = QLineEdit(self)
         self.function.setPlaceholderText("字符串")
-        functionLayout.addWidget(self.function)
-        layout.addLayout(functionLayout)
+        gridLayout.addWidget(self.function , 0 , 1)
 
         # x0
-        x0Layout = QHBoxLayout()
         x0Lable = QLabel("起始点X0")
-        x0Layout.addWidget(x0Lable)
+        gridLayout.addWidget(x0Lable , 1 , 0)
         self.x0 = QLineEdit(self)
         self.x0.setPlaceholderText("空格分隔  1.0 1.0")
-        x0Layout.addWidget(self.x0)
-        layout.addLayout(x0Layout)
+        gridLayout.addWidget(self.x0 , 1 , 1)
 
         # epslionx
-        epXLayout = QHBoxLayout()
         epXLable = QLabel("epsilon x")
-        epXLayout.addWidget(epXLable)
+        gridLayout.addWidget(epXLable , 2 , 0)
         self.epsilonx = QLineEdit(self)
         self.epsilonx.setPlaceholderText("0.01")
-        epXLayout.addWidget(self.epsilonx)
-        layout.addLayout(epXLayout)
+        gridLayout.addWidget(self.epsilonx , 2 , 1)
 
         # epsilonf
-        epFLayout = QHBoxLayout()
         epFLable = QLabel("epsilon f")
-        epFLayout.addWidget(epFLable)
+        gridLayout.addWidget(epFLable , 3 , 0)
         self.epsilonf = QLineEdit(self)
         self.epsilonf.setPlaceholderText("0.01")
-        epFLayout.addWidget(self.epsilonf)
-        layout.addLayout(epFLayout)
+        gridLayout.addWidget(self.epsilonf , 3 , 1)
 
         # 搜索方向
-        sLayout = QHBoxLayout()
         sLable = QLabel("搜索方向S")
-        sLayout.addWidget(sLable)
+        gridLayout.addWidget(sLable , 4 , 0)
         self.sInputTextbox = QLineEdit(self)
         self.sInputTextbox.setPlaceholderText("空格分隔 1.2 1.2")
-        sLayout.addWidget(self.sInputTextbox)
-        layout.addLayout(sLayout)
-        
+        gridLayout.addWidget(self.sInputTextbox , 4 , 1)
+
         # 最大步长
-        maxStepLayout = QHBoxLayout()
-        self.maxStepLable = QLabel("最大迭代次数")
-        maxStepLayout.addWidget(self.maxStepLable)
+        maxStepLable = QLabel("最大迭代次数")
+        gridLayout.addWidget(maxStepLable , 5 , 0)
         self.maxStep = QLineEdit(self)
         self.maxStep.setPlaceholderText("默认1000")
         self.maxStep.setText("1000")
-        maxStepLayout.addWidget(self.maxStep)
-        layout.addLayout(maxStepLayout)
+        gridLayout.addWidget(self.maxStep , 5 , 1)
         
         # 默认情况下启用文本框，设置单选框状态
         self.sInputTextbox.setEnabled(True)
         self.radio_enable.setChecked(True)
 
         # 确定按钮
-        self.ok = QPushButton("确认")
-        self.ok.clicked.connect(self.accept)
+        self.ok = QPushButton("确认" , self)
+        self.ok.clicked.connect(self.check_input)
         layout.addWidget(self.ok)
 
     def return_input(self):
         pass
 
     def check_input(self):
-        if not self.function.text.strip():
-            self.error_label.setText("输入函数为空!")
-        elif not self.x0.text.strip():
-            self.error_label.setText("输入初始点为空!")
-        elif not self.epsilonx.text.strip():
-            self.error_label.setText("输入epsilon x为空!")
-        elif not self.epsilonf.text.strip():
-            self.error_label.setText("输入epsilon f为空!")
-        elif self.radio_enable.isChecked() and (not self.sInputTextbox.text.strip()):
-            self.error_label.setText("已选择一维优化模型，但是输入搜索方向为空!")
-        elif not self.maxStep.text.strip():
-            self.error_label.setText("输入最大迭代次数为空!")
+        if not self.function.text().strip():
+            QMessageBox.warning(self , "输入错误" , "输入函数为空!")
+        elif not self.x0.text().strip():
+            QMessageBox.warning(self , "输入错误" , "输入初始点为空!")
+        elif not self.epsilonx.text().strip():
+            QMessageBox.warning(self , "输入错误" , "输入epsilon x为空!")
+        elif not self.epsilonf.text().strip():
+            QMessageBox.warning(self , "输入错误" , "输入epsilon f为空!")
+        elif self.radio_enable.isChecked() and (not self.sInputTextbox.text().strip()):
+            QMessageBox.warning(self , "输入错误" , "已选择一维优化模型，但是输入搜索方向为空!")
+        elif not self.maxStep.text().strip():
+            QMessageBox.warning(self , "输入错误" , "输入最大迭代次数为空!")
+        else:
+            self.accept()
 
 
     def enable_s_input(self):
@@ -173,17 +163,7 @@ class MyApp(QWidget):
         self.input_num2.setPlaceholderText("浮点数2")
         layout.addWidget(self.input_num2)
 
-        self.create_button = QPushButton("创建实例", self)
-        self.create_button.clicked.connect(self.create_instance)
-        layout.addWidget(self.create_button)
 
-        self.button1 = QPushButton("调用 Method1", self)
-        self.button1.clicked.connect(lambda: self.call_method("method1"))
-        layout.addWidget(self.button1)
-
-        self.button2 = QPushButton("调用 Method2", self)
-        self.button2.clicked.connect(lambda: self.call_method("method2"))
-        layout.addWidget(self.button2)
 
         self.result_label = QLabel("结果:")
         layout.addWidget(self.result_label)
