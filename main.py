@@ -1,4 +1,4 @@
-from convexOptimization import MethodType , OnedimensionOptimization , MultidimensionOptimization
+from lyy19Lib.convexOptimization import MethodType , OnedimensionOptimization , MultidimensionOptimization
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout , QLabel, QPushButton, QLineEdit, QMessageBox , QDialog , QRadioButton , QGridLayout , QTextEdit , QButtonGroup
 from enum import Enum
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
