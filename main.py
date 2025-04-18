@@ -1,5 +1,6 @@
 from lyy19Lib.convexOptimization import MethodType , OnedimensionOptimization , MultidimensionOptimization
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout , QLabel, QPushButton, QLineEdit, QMessageBox , QDialog , QRadioButton , QGridLayout , QTextEdit , QButtonGroup
+from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout , QLabel, QPushButton, QLineEdit, QMessageBox , QDialog , QRadioButton , QGridLayout , QTextEdit , QButtonGroup, QMainWindow, QMenuBar
+from PyQt6.QtGui import QAction
 from enum import Enum
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 
@@ -261,18 +262,17 @@ class InputFunction(QDialog):
 class MyApp(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("固定比例窗口")
-        self.resize(600, 450)  # 初始大小
-        self.aspect_ratio = 4 / 3  # 设定固定比例 (4:3)
-
-        self.initUI()
+        # self.resize(600, 450)  # 初始大小
+        # self.aspect_ratio = 4 / 3  # 设定固定比例 (4:3)
+        self.initUI() # 布局设计
         self.problem = None
 
     def initUI(self):
         '''
         布局设计
         '''
-        layout = QVBoxLayout()
+        layout = QVBoxLayout() # 总布局为垂直布局
+
         self.InputButton = QPushButton("输入优化问题", self)
         self.InputButton.clicked.connect(self.get_input_function_dialog)  # 绑定点击事件
         layout.addWidget(self.InputButton)
@@ -291,7 +291,7 @@ class MyApp(QWidget):
         self.outputInfo.setText(defaultOutPutText)
         layout.addWidget(self.outputInfo)
 
-        # 优化按钮
+        # 优化按钮与log按钮
         buttonLayout = QHBoxLayout()
         self.optimizeButton = QPushButton("优化")
         self.optimizeButton.clicked.connect(self.start_optimization)
@@ -367,14 +367,42 @@ class MyApp(QWidget):
             #inputInfo += f"{}"
             self.inputInfo.setText(inputInfo)
 
+    # def resizeEvent(self, event):
+        # """ 监听窗口调整事件，并强制窗口保持固定比例 """
+        # width = event.size().width()
+        # height = int(width / self.aspect_ratio)
+        # self.resize(width, height)  # 重新设置窗口大小，使其符合比例
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.resize(600, 450)  # 初始大小
+        self.aspect_ratio = 4 / 3  # 设定固定比例 (4:3)
+        self.setWindowTitle("凸优化程序")
+
+        # 创建菜单栏
+        self.create_menu_bar()
+        self.setCentralWidget(MyApp())
     def resizeEvent(self, event):
         """ 监听窗口调整事件，并强制窗口保持固定比例 """
         width = event.size().width()
         height = int(width / self.aspect_ratio)
         self.resize(width, height)  # 重新设置窗口大小，使其符合比例
+    def create_menu_bar(self):
+        menuBar = self.menuBar()
+
+        fileMenu = menuBar.addMenu("文件(&F)")
+
+        newAction = QAction("创建优化实例", self)
+        fileMenu.addAction(newAction)
+
+        exitAction = QAction("退出", self)
+        exitAction.triggered.connect(self.close)
+        fileMenu.addAction(exitAction)
 
 
-app = QApplication([])
-window = MyApp()
-window.show()
-app.exec()
+if __name__ == "__main__":
+    app = QApplication([])
+    window = MainWindow()
+    window.show()
+    app.exec()
