@@ -384,23 +384,20 @@ class MainWindow(QMainWindow):
         dialog = ProblemSwitch(self)
         while True:
             if dialog.exec() == QDialog.DialogCode.Accepted:
-                # print(dialog.result)
-                if dialog.result == ProblemType.oneDimension:
-                    inputDialog = oneDimensionDialog(self)
-                elif dialog.result == ProblemType.multiDimension:
-                    inputDialog = multiDimensionDialog(self)
-                elif dialog.result == ProblemType.constrainted:
-                    inputDialog = constraintedDialog(self)
-                elif dialog.result == ProblemType.multiTarget:
-                    inputDialog = multiTargetDialog(self)
+                for i in project:
+                    if dialog.result in i:
+                        inputDialog = i[1]()
+                        optimization = i[2]
 
                 if inputDialog.exec() == QDialog.DialogCode.Rejected:
                     continue
                 else:
                     # 输入成功，初始化求解器
                     # 初始化
-                    print(inputDialog.result)
-                    
+                    parameter = inputDialog.result
+                    print(parameter)
+                    self.problem = optimization(parameter)
+                    print(self.problem.read_logs())
                     break
             else:
                 break

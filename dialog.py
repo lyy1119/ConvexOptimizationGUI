@@ -125,13 +125,13 @@ class oneDimensionDialog(QDialog):
         self.result["epsilonx"] = epsilonx
         # 验证epsilonf
         try:
-            epsilonx = float(self.epsilonx.text())
-            if epsilonx < 0:
+            epsilonf = float(self.epsilonf.text())
+            if epsilonf < 0:
                 raise ValueError()
         except:
             QMessageBox.warning(self,  "输入错误", "输入的epsilonx不是正实数")
             return
-        self.result["epsilonx"] = epsilonx
+        self.result["epsilonf"] = epsilonf
         # 验证S
         dimension = f.dimension
         if len(self.sInputTextbox.text().split()) != dimension:
