@@ -361,9 +361,6 @@ class MainWidget(QWidget):
             inputInfo = f"函数：{self.problem.function}\n初始点：\n{self.problem.x0}\nepsilon x：{epsilonx}\nepsilon f：{epsilonf}\nmaxStep：{maxStep}"
             if t == ProblemType.oneDimension:
                 inputInfo += f"\nS：\n{self.problem.s}"
-            # 写入
-            #inputInfo += f"\nmethod："
-            #inputInfo += f"{}"
             self.inputInfo.setText(inputInfo)
 
 class MainWindow(QMainWindow):
@@ -404,10 +401,16 @@ class MainWindow(QMainWindow):
                     inputDialog = oneDimensionDialog(self)
                 elif dialog.result == ProblemType.multiDimension:
                     inputDialog = multiDimensionDialog(self)
+                elif dialog.result == ProblemType.constrainted:
+                    inputDialog = constraintedDialog(self)
+                elif dialog.result == ProblemType.multiTarget:
+                    inputDialog = multiTargetDialog(self)
+
                 if inputDialog.exec() == QDialog.DialogCode.Rejected:
                     continue
                 else: # 初始化
                     print(inputDialog.result)
+
                     break
             else:
                 break
