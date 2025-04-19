@@ -58,7 +58,7 @@ class oneDimensionDialog(InputParameterPrototype):
         layout = QVBoxLayout(self.contentWidget)
 
         # 输入参数
-        parameter = QGroupBox("输出参数")
+        parameter = QGroupBox("输入参数")
         parameterLayout = QGridLayout(parameter)
 
         # 函数
@@ -75,7 +75,7 @@ class oneDimensionDialog(InputParameterPrototype):
         self.x0.setPlaceholderText("空格分隔  1.0 1.0")
         parameterLayout.addWidget(self.x0 , 1 , 1)
 
-        # epslionx
+        # epsilonx
         epXLable = QLabel("epsilon x")
         parameterLayout.addWidget(epXLable , 2 , 0)
         self.epsilonx = QLineEdit(self)
@@ -190,7 +190,7 @@ class multiDimensionDialog(InputParameterPrototype):
         layout = QVBoxLayout(self.contentWidget)
 
         # 输入参数
-        parameter = QGroupBox("输出参数")
+        parameter = QGroupBox("输入参数")
         parameterLayout = QGridLayout(parameter)
 
         # 函数
@@ -207,7 +207,7 @@ class multiDimensionDialog(InputParameterPrototype):
         self.x0.setPlaceholderText("空格分隔  1.0 1.0")
         parameterLayout.addWidget(self.x0 , 1 , 1)
 
-        # epslionx
+        # epsilonx
         epXLable = QLabel("epsilon x")
         parameterLayout.addWidget(epXLable , 2 , 0)
         self.epsilonx = QLineEdit(self)
@@ -300,13 +300,13 @@ class multiDimensionDialog(InputParameterPrototype):
         self.result["epsilonx"] = epsilonx
         # 验证epsilonf
         try:
-            epsilonx = float(self.epsilonx.text())
-            if epsilonx < 0:
+            epsilonf = float(self.epsilonf.text())
+            if epsilonf < 0:
                 raise ValueError()
         except:
             QMessageBox.warning(self,  "输入错误", "输入的epsilonx不是正实数")
             return
-        self.result["epsilonx"] = epsilonx
+        self.result["epsilonf"] = epsilonf
         # 优化方法
         for i, j in self.multiDimensionButton.items():
             if i.isChecked():
@@ -325,7 +325,7 @@ class constraintedDialog(InputParameterPrototype):
         layout = QVBoxLayout(self.contentWidget)
 
         # 输入参数
-        parameter = QGroupBox("输出参数")
+        parameter = QGroupBox("输入参数")
         parameterLayout = QGridLayout(parameter)
 
         # 函数
@@ -365,7 +365,7 @@ class constraintedDialog(InputParameterPrototype):
 
         nowLine += 1
 
-        # epslionx
+        # epsilonx
         epXLable = QLabel("epsilon x")
         parameterLayout.addWidget(epXLable , nowLine, 0)
         self.epsilonx = QLineEdit(self)
@@ -648,7 +648,7 @@ class multiTargetDialog(InputParameterPrototype):
         layout = QVBoxLayout(self.contentWidget)
 
         # 输入参数
-        parameter = QGroupBox("输出参数")
+        parameter = QGroupBox("输入参数")
         parameterLayout = QGridLayout(parameter)
 
         # 函数
@@ -702,7 +702,7 @@ class multiTargetDialog(InputParameterPrototype):
 
         nowLine += 1
 
-        # epslionx
+        # epsilonx
         epXLable = QLabel("epsilon x")
         parameterLayout.addWidget(epXLable , nowLine, 0)
         self.epsilonx = QLineEdit(self)

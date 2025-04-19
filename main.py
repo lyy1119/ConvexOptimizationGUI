@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout , QL
 from PyQt6.QtGui import QAction
 from enum import Enum
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
-
+from about import *
 from dialog import *
 
 defaultInputText = """函数：
@@ -188,6 +188,16 @@ class MainWindow(QMainWindow):
         saveLogAction.triggered.connect(self.save_logs)
         dataMenu.addAction(saveLogAction)
 
+        aboutMenu = menuBar.addMenu("关于(&A)")
+
+        aboutAction = QAction("关于", self)
+        aboutAction.triggered.connect(self.show_about_dialog)
+        aboutMenu.addAction(aboutAction)
+
+    def show_about_dialog(self):
+        aboutDialog = AboutDialog(self)  # 小驼峰变量名
+        aboutDialog.exec()
+
     def create_optimization_entity(self):
         # 选则创建哪种优化问题
         dialog = ProblemSwitch(self)
@@ -204,7 +214,18 @@ class MainWindow(QMainWindow):
                     # 输入成功，初始化求解器
                     # 初始化
                     parameter = inputDialog.result
-                    self.problem = optimization(parameter)
+                    try:
+                        self.problem = optimization(parameter)
+                    except Exception as e:
+                         # 捕获异常并显示错误信息
+                        errorMsg = f"发生错误: {str(e)}"
+                        QMessageBox.critical(
+                            self, 
+                            "错误", 
+                            errorMsg,
+                            QMessageBox.StandardButton.Ok
+                        )
+                        return 0
                     self.method = parameter["method"]
                     # print(parameter)
                     self.optimizationPara = parameter.get("optimizationParameter", None)
@@ -227,10 +248,21 @@ class MainWindow(QMainWindow):
 
     def solve(self):
         method = self.method
-        if self.optimizationPara:
-            self.problem.solve(method, *self.optimizationPara)
-        else:
-            self.problem.solve(method)
+        try:
+            if self.optimizationPara:
+                self.problem.solve(method, *self.optimizationPara)
+            else:
+                self.problem.solve(method)
+        except Exception as e:
+            # 捕获异常并显示错误信息
+            errorMsg = f"发生错误: {str(e)}"
+            QMessageBox.critical(
+                self, 
+                "错误", 
+                errorMsg,
+                QMessageBox.StandardButton.Ok
+            )
+            return 0
 
         self.logDialog = LogWindow()
         self.logDialog.show()
