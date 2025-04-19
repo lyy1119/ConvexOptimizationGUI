@@ -206,8 +206,12 @@ class MainWindow(QMainWindow):
                     parameter = inputDialog.result
                     self.problem = optimization(parameter)
                     self.method = parameter["method"]
+                    # print(parameter)
                     self.optimizationPara = parameter.get("optimizationParameter", None)
+                    if self.optimizationPara == []:
+                        self.optimizationPara = None
                     # 写初始化结果
+                    # print(self.optimizationPara)
                     self.widget.set_input(self.problem.logs)
                     break
             else:
@@ -224,7 +228,7 @@ class MainWindow(QMainWindow):
     def solve(self):
         method = self.method
         if self.optimizationPara:
-            self.problem.solve(method, self.optimizationPara)
+            self.problem.solve(method, *self.optimizationPara)
         else:
             self.problem.solve(method)
 
@@ -250,7 +254,7 @@ class MainWindow(QMainWindow):
             self,  # 父窗口
             "选择保存位置",  # 标题
             "",  # 起始目录
-            "所有文件 (*);;文本文件 (*.txt);;"  # 文件过滤器
+            "文本文件 (*.txt);;"  # 文件过滤器
         )
         if filePath:
             try:

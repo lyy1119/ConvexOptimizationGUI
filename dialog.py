@@ -1,9 +1,9 @@
 from lyy19Lib.convexOptimization import MethodType , OnedimensionOptimization , MultidimensionOptimization, ConstraintOptimization
 from lyy19Lib.mathFunction import FractionFunction
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout , QLabel, QPushButton, QLineEdit, QMessageBox , QDialog , QRadioButton , QGridLayout , QTextEdit , QButtonGroup, QMainWindow, QMenuBar, QGroupBox, QSizePolicy
+from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout , QLabel, QPushButton, QLineEdit, QMessageBox , QDialog , QRadioButton , QGridLayout , QTextEdit , QButtonGroup, QMainWindow, QMenuBar, QGroupBox, QSizePolicy, QScrollArea
 from PyQt6.QtGui import QAction
 from enum import Enum
-from PyQt6.QtCore import Qt, QThread, pyqtSignal
+from PyQt6.QtCore import Qt, QThread, pyqtSignal, QSize
 from customWidget import *
 
 class ProblemType(Enum):
@@ -12,7 +12,42 @@ class ProblemType(Enum):
     constrainted = 2
     multiTarget = 4
 
-class oneDimensionDialog(QDialog):
+class InputParameterPrototype(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        # 获取当前所在屏幕的几何尺寸
+        screen = QApplication.screenAt(self.pos())
+        if screen is None:
+            screen = QApplication.primaryScreen()
+        screenGeometry = screen.availableGeometry()
+        # 获取主屏幕的可用几何尺寸（排除任务栏等）
+        screen = QApplication.primaryScreen()
+        screenGeometry = screen.availableGeometry()
+        
+        # 计算90%的宽度和高度
+        maxWidth = int(screenGeometry.width()*0.8)
+        maxHeight = int(screenGeometry.height()*0.8)
+        
+        # 设置对话框的最大尺寸
+        self.setMaximumSize(QSize(maxWidth, maxHeight))
+        # 创建主布局
+        mainLayout = QVBoxLayout(self)
+        mainLayout.setContentsMargins(0, 0, 0, 0)  # 移除边距
+        # 创建滚动区域
+        scrollArea = QScrollArea()
+        scrollArea.setWidgetResizable(True)  # 允许内部widget调整大小
+        scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        # 创建内容widget
+        self.contentWidget = QWidget()
+        # self.contentLayout = QVBoxLayout(self.contentWidget)
+        # self.contentLayout.setContentsMargins(10, 10, 10, 10)  # 设置内容边距
+        # 设置滚动区域的内容widget
+        scrollArea.setWidget(self.contentWidget)
+        # 将滚动区域添加到主布局
+        mainLayout.addWidget(scrollArea)
+
+class oneDimensionDialog(InputParameterPrototype):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.create_layout()
@@ -20,7 +55,7 @@ class oneDimensionDialog(QDialog):
 
     def create_layout(self):
         # 填写一维优化所需参数
-        layout = QVBoxLayout(self)
+        layout = QVBoxLayout(self.contentWidget)
 
         # 输入参数
         parameter = QGroupBox("输出参数")
@@ -144,7 +179,7 @@ class oneDimensionDialog(QDialog):
                 self.result["method"] = j
         return super().accept()
 
-class multiDimensionDialog(QDialog):
+class multiDimensionDialog(InputParameterPrototype):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.create_layout()
@@ -152,7 +187,7 @@ class multiDimensionDialog(QDialog):
 
     def create_layout(self):
         # 填写多维无约束优化所需参数
-        layout = QVBoxLayout(self)
+        layout = QVBoxLayout(self.contentWidget)
 
         # 输入参数
         parameter = QGroupBox("输出参数")
@@ -278,7 +313,7 @@ class multiDimensionDialog(QDialog):
                 self.result["method"] = j
         return super().accept()
 
-class constraintedDialog(QDialog):
+class constraintedDialog(InputParameterPrototype):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.create_layout()
@@ -287,7 +322,7 @@ class constraintedDialog(QDialog):
     def create_layout(self):
         nowLine = 0
         # 填写多维无约束优化所需参数
-        layout = QVBoxLayout(self)
+        layout = QVBoxLayout(self.contentWidget)
 
         # 输入参数
         parameter = QGroupBox("输出参数")
@@ -316,7 +351,7 @@ class constraintedDialog(QDialog):
 
         nowLine += 1
 
-        # gu
+        # hv
         hvLable = QLabel("hv(X)")
         hvLable.setAlignment(Qt.AlignmentFlag.AlignTop)
         hvLable.setStyleSheet("""
@@ -327,15 +362,6 @@ class constraintedDialog(QDialog):
         parameterLayout.addWidget(hvLable, nowLine, 0)
         self.hv = StackedInputWidget()
         parameterLayout.addWidget(self.hv, nowLine, 1)
-
-        nowLine += 1
-
-        # x0
-        x0Lable = QLabel("起始点X0")
-        parameterLayout.addWidget(x0Lable , nowLine, 0)
-        self.x0 = QLineEdit(self)
-        self.x0.setPlaceholderText("空格分隔  1.0 1.0")
-        parameterLayout.addWidget(self.x0 , nowLine, 1)
 
         nowLine += 1
 
@@ -354,6 +380,24 @@ class constraintedDialog(QDialog):
         self.epsilonf = QLineEdit(self)
         self.epsilonf.setPlaceholderText("0.01")
         parameterLayout.addWidget(self.epsilonf , nowLine, 1)
+
+        nowLine += 1
+
+        # upLimit
+        upLable = QLabel("初始点上限")
+        parameterLayout.addWidget(upLable, nowLine, 0)
+        self.upLimit = QLineEdit(self)
+        self.upLimit.setPlaceholderText("空格分隔")
+        parameterLayout.addWidget(self.upLimit, nowLine, 1)
+
+        nowLine += 1
+
+        # lowLimit
+        lowLabel = QLabel("初始点下限")
+        parameterLayout.addWidget(lowLabel, nowLine, 0)
+        self.lowLimit = QLineEdit(self)
+        self.lowLimit.setPlaceholderText("空格分隔")
+        parameterLayout.addWidget(self.lowLimit, nowLine, 1)
 
         nowLine += 1
 
@@ -412,6 +456,35 @@ class constraintedDialog(QDialog):
 
         nowLine += 1
 
+        # x0
+        x0Lable = QLabel("初始点")
+        optimizationParaLayout.addWidget(x0Lable, nowLine, 0)
+        self.x0 = QLineEdit(self)
+        self.x0.setPlaceholderText("空格分隔  1.0 1.0 不指定时自动生成")
+        optimizationParaLayout.addWidget(self.x0, nowLine, 1)
+
+        nowLine += 1
+
+        # 指定无约束优化方法
+        method = QGroupBox("优化方法")
+        methodLayout = QHBoxLayout(method)
+        # 多维优化方法
+        multiDimensionMethodGroup = QButtonGroup(self)
+        self.powell = QRadioButton("powell法")
+        multiDimensionMethodGroup.addButton(self.powell)
+        self.dfp = QRadioButton("dfp")
+        multiDimensionMethodGroup.addButton(self.dfp)
+        self.bfgs = QRadioButton("bfgs")
+        multiDimensionMethodGroup.addButton(self.bfgs)
+        self.multiDimensionButton = {
+            self.powell: MethodType.powell ,
+            self.dfp: MethodType.dfp ,
+            self.bfgs: MethodType.bfgs
+            }
+        for i in self.multiDimensionButton.keys():
+            methodLayout.addWidget(i)
+        self.powell.setChecked(True)
+        layout.addWidget(method)
 
         # 确定与取消
         buttonLayout = QHBoxLayout()
@@ -434,7 +507,10 @@ class constraintedDialog(QDialog):
         self.result["function"] = f
         # 验证gu
         gu = self.gu.get_values()
-        gu = [FractionFunction(i) for i in gu]
+        if gu != [""]:
+            gu = [FractionFunction(i) for i in gu]
+        else:
+            gu = []
         maxDimension = 0
         for index, i in enumerate(gu):
             try:
@@ -449,7 +525,10 @@ class constraintedDialog(QDialog):
             self.result["gu"] = gu
         # 验证hv
         hv = self.hv.get_values()
-        hv = [FractionFunction(i) for i in hv]
+        if hv != [""]:
+            hv = [FractionFunction(i) for i in hv]
+        else:
+            hv = []
         maxDimension = 0
         for index, i in enumerate(hv):
             try:
@@ -462,13 +541,27 @@ class constraintedDialog(QDialog):
             return
         else:
             self.result["hv"] = hv
-        # 验证初始点
-        dimension = f.dimension
-        if len(self.x0.text().split()) != dimension:
-            QMessageBox.warning(self,  "输入错误", "输入的初始点和函数维度不符")
-            return
-        self.result["x0"] = list(self.x0.text().split())
-        # 验证epsilonx
+        # 上下限
+        try:
+            upLimit = list(map(int, self.upLimit.text().split()))
+            if len(upLimit) != f.dimension:
+                QMessageBox.warning(self, "错误", "输入的初始点上限与函数维度不符")
+                return
+            else:
+                self.result["upLimit"] = upLimit
+        except:
+            QMessageBox.warning(self, "错误", "输入的初始点上限格式有误")
+        try:
+            lowLimit = list(map(int, self.lowLimit.text().split()))
+            if len(lowLimit) != f.dimension:
+                QMessageBox.warning(self, "错误", "输入的初始点下限与函数维度不符")
+                return
+            else:
+                self.result["lowLimit"] = lowLimit
+        except:
+            QMessageBox.warning(self, "错误", "输入的初始点下限格式有误")
+
+       # 验证epsilonx
         try:
             epsilonx = float(self.epsilonx.text())
             if epsilonx < 0:
@@ -479,20 +572,71 @@ class constraintedDialog(QDialog):
         self.result["epsilonx"] = epsilonx
         # 验证epsilonf
         try:
-            epsilonx = float(self.epsilonx.text())
-            if epsilonx < 0:
+            epsilonf = float(self.epsilonf.text())
+            if epsilonf < 0:
                 raise ValueError()
         except:
             QMessageBox.warning(self,  "输入错误", "输入的epsilonx不是正实数")
             return
-        self.result["epsilonx"] = epsilonx
+        self.result["epsilonf"] = epsilonf
         # 优化方法
-        for i, j in self.multiDimensionButton.items():
+        for i, j in self.methodButton.items():
             if i.isChecked():
                 self.result["method"] = j
+
+
+        self.result["optimizationParameter"] = []
+        # 优化方法参数载入
+        if self.result["method"] == MethodType.penaltyMethodInterior or self.result["method"] == MethodType.penaltyMethodExterior or self.result["method"] == MethodType.penaltyMethodMixed:
+            # 载入 r,c
+            if self.r.text():
+                try:
+                    r = float(self.r.text())
+                except:
+                    QMessageBox.warning(self, "错误", "惩罚因子r输入格式错误")
+                    return
+            else:
+                if self.result["method"] == MethodType.penaltyMethodInterior:
+                    r = 1
+                elif self.result["method"] == MethodType.penaltyMethodExterior:
+                    r = 10
+                else:
+                    QMessageBox.warning(self, "warning", "程序错误 -1")
+                    raise ValueError("wrong way")
+            self.result["optimizationParameter"].append(r)
+            if self.c.text():
+                try:
+                    c = float(self.c.text())
+                except:
+                    QMessageBox.warning(self, "错误", "递增递减系数输入错误")
+                    return
+            else:
+                if self.result["method"] == MethodType.penaltyMethodInterior:
+                    c = 0.6
+                elif self.result["method"] == MethodType.penaltyMethodExterior:
+                    c = 8
+                else:
+                    QMessageBox.warning(self, "warning", "程序错误 -1")
+                    raise ValueError("wrong way")
+            self.result["optimizationParameter"].append(c)
+        # 指定多维无约束优化方法
+        for i, j in self.multiDimensionButton.items():
+            if i.isChecked():
+                unconsitraintMethod = j
+                break
+        self.result["optimizationParameter"].append(unconsitraintMethod)
+        # 载入初始点，可能有，也可能没有
+        if self.x0.text():
+            # 如果有
+            try:
+                x0 = list(map(int , self.x0.text().split()))
+            except:
+                QMessageBox.warning(self, "错误", "输出的初始点格式错误")
+                return
+            self.result["optimizationParameter"].append(x0)
         return super().accept()
 
-class multiTargetDialog(QDialog):
+class multiTargetDialog(InputParameterPrototype):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.create_layout()
@@ -501,7 +645,7 @@ class multiTargetDialog(QDialog):
     def create_layout(self):
         nowLine = 0
         # 填写多维无约束优化所需参数
-        layout = QVBoxLayout(self)
+        layout = QVBoxLayout(self.contentWidget)
 
         # 输入参数
         parameter = QGroupBox("输出参数")
@@ -544,7 +688,7 @@ class multiTargetDialog(QDialog):
 
         nowLine += 1
 
-        # gu
+        # hv
         hvLable = QLabel("hv(X)")
         hvLable.setAlignment(Qt.AlignmentFlag.AlignTop)
         hvLable.setStyleSheet("""
@@ -555,15 +699,6 @@ class multiTargetDialog(QDialog):
         parameterLayout.addWidget(hvLable, nowLine, 0)
         self.hv = StackedInputWidget()
         parameterLayout.addWidget(self.hv, nowLine, 1)
-
-        nowLine += 1
-
-        # x0
-        x0Lable = QLabel("起始点X0")
-        parameterLayout.addWidget(x0Lable , nowLine, 0)
-        self.x0 = QLineEdit(self)
-        self.x0.setPlaceholderText("空格分隔  1.0 1.0")
-        parameterLayout.addWidget(self.x0 , nowLine, 1)
 
         nowLine += 1
 
@@ -585,6 +720,24 @@ class multiTargetDialog(QDialog):
 
         nowLine += 1
 
+        # upLimit
+        upLable = QLabel("初始点上限")
+        parameterLayout.addWidget(upLable, nowLine, 0)
+        self.upLimit = QLineEdit(self)
+        self.upLimit.setPlaceholderText("空格分隔")
+        parameterLayout.addWidget(self.upLimit, nowLine, 1)
+
+        nowLine += 1
+
+        # lowLimit
+        lowLabel = QLabel("初始点下限")
+        parameterLayout.addWidget(lowLabel, nowLine, 0)
+        self.lowLimit = QLineEdit(self)
+        self.lowLimit.setPlaceholderText("空格分隔")
+        parameterLayout.addWidget(self.lowLimit, nowLine, 1)
+
+        nowLine += 1
+
         # 最大步长
         maxStepLable = QLabel("最大迭代次数")
         parameterLayout.addWidget(maxStepLable , nowLine, 0)
@@ -597,7 +750,61 @@ class multiTargetDialog(QDialog):
 
         # 方法选择
         method = QGroupBox("优化方法")
-        methodLayout = QVBoxLayout(method)
+        methodLayout = QHBoxLayout(method)
+        # 多维优化方法
+        multiDimensionMethodGroup = QButtonGroup(self)
+        self.stochasticDirectionMethod = QRadioButton("随机方向法")
+        multiDimensionMethodGroup.addButton(self.stochasticDirectionMethod)
+        self.compositeMethod = QRadioButton("复合形法")
+        multiDimensionMethodGroup.addButton(self.compositeMethod)
+        self.penaltyMethodInterior = QRadioButton("内点罚函数法")
+        multiDimensionMethodGroup.addButton(self.penaltyMethodInterior)
+        self.methodButton = {
+            self.stochasticDirectionMethod  : MethodType.stochasticDirectionMethod,
+            self.compositeMethod            : MethodType.compositeMethod,
+            self.penaltyMethodInterior      : MethodType.penaltyMethodInterior
+            }
+        for i in self.methodButton.keys():
+            methodLayout.addWidget(i)
+        self.stochasticDirectionMethod.setChecked(True)
+        layout.addWidget(method)
+
+        # 优化参数 主要是内点罚函数的r和c
+        optimizationPara = QGroupBox("优化参数")
+        layout.addWidget(optimizationPara)
+
+        optimizationParaLayout = QGridLayout(optimizationPara)
+        nowLine = 0
+        # 惩罚因子r
+        rLable = QLabel("惩罚因子r")
+        optimizationParaLayout.addWidget(rLable , nowLine, 0)
+        self.r = QLineEdit(self)
+        self.r.setPlaceholderText("实数")
+        optimizationParaLayout.addWidget(self.r , nowLine, 1)
+
+        nowLine += 1
+
+        # 递增/递减系数
+        cLable = QLabel("递增/递减系数")
+        optimizationParaLayout.addWidget(cLable , nowLine, 0)
+        self.c = QLineEdit(self)
+        self.c.setPlaceholderText("实数")
+        optimizationParaLayout.addWidget(self.c , nowLine, 1)
+
+        nowLine += 1
+
+        # x0
+        x0Lable = QLabel("初始点")
+        optimizationParaLayout.addWidget(x0Lable, nowLine, 0)
+        self.x0 = QLineEdit(self)
+        self.x0.setPlaceholderText("空格分隔  1.0 1.0 不指定时自动生成")
+        optimizationParaLayout.addWidget(self.x0, nowLine, 1)
+
+        nowLine += 1
+
+        # 指定无约束优化方法
+        method = QGroupBox("优化方法")
+        methodLayout = QHBoxLayout(method)
         # 多维优化方法
         multiDimensionMethodGroup = QButtonGroup(self)
         self.powell = QRadioButton("powell法")
@@ -646,7 +853,10 @@ class multiTargetDialog(QDialog):
         self.result["function"] = [[functions[i], float(w[i])] for i in range(len(w))]
         # 验证gu
         gu = self.gu.get_values()
-        gu = [FractionFunction(i) for i in gu]
+        if gu != [""]:
+            gu = [FractionFunction(i) for i in gu]
+        else:
+            gu = []
         maxDimension = 0
         for index, i in enumerate(gu):
             try:
@@ -661,7 +871,10 @@ class multiTargetDialog(QDialog):
             self.result["gu"] = gu
         # 验证hv
         hv = self.hv.get_values()
-        hv = [FractionFunction(i) for i in hv]
+        if hv != [""]:
+            hv = [FractionFunction(i) for i in hv]
+        else:
+            hv = []
         maxDimension = 0
         for index, i in enumerate(hv):
             try:
@@ -674,12 +887,27 @@ class multiTargetDialog(QDialog):
             return
         else:
             self.result["hv"] = hv
-        # 验证初始点
-        if len(self.x0.text().split()) != dimension:
-            QMessageBox.warning(self,  "输入错误", "输入的初始点和函数维度不符")
-            return
-        self.result["x0"] = list(self.x0.text().split())
-        # 验证epsilonx
+        # 上下限
+        try:
+            upLimit = list(map(int, self.upLimit.text().split()))
+            if len(upLimit) != dimension:
+                QMessageBox.warning(self, "错误", "输入的初始点上限与函数维度不符")
+                return
+            else:
+                self.result["upLimit"] = upLimit
+        except:
+            QMessageBox.warning(self, "错误", "输入的初始点上限格式有误")
+        try:
+            lowLimit = list(map(int, self.lowLimit.text().split()))
+            if len(lowLimit) != dimension:
+                QMessageBox.warning(self, "错误", "输入的初始点下限与函数维度不符")
+                return
+            else:
+                self.result["lowLimit"] = lowLimit
+        except:
+            QMessageBox.warning(self, "错误", "输入的初始点下限格式有误")
+
+       # 验证epsilonx
         try:
             epsilonx = float(self.epsilonx.text())
             if epsilonx < 0:
@@ -690,19 +918,69 @@ class multiTargetDialog(QDialog):
         self.result["epsilonx"] = epsilonx
         # 验证epsilonf
         try:
-            epsilonx = float(self.epsilonx.text())
-            if epsilonx < 0:
+            epsilonf = float(self.epsilonf.text())
+            if epsilonf < 0:
                 raise ValueError()
         except:
             QMessageBox.warning(self,  "输入错误", "输入的epsilonx不是正实数")
             return
-        self.result["epsilonx"] = epsilonx
+        self.result["epsilonf"] = epsilonf
         # 优化方法
-        for i, j in self.multiDimensionButton.items():
+        for i, j in self.methodButton.items():
             if i.isChecked():
                 self.result["method"] = j
-        return super().accept()
 
+
+        self.result["optimizationParameter"] = []
+        # 优化方法参数载入
+        if self.result["method"] == MethodType.penaltyMethodInterior or self.result["method"] == MethodType.penaltyMethodExterior or self.result["method"] == MethodType.penaltyMethodMixed:
+            # 载入 r,c
+            if self.r.text():
+                try:
+                    r = float(self.r.text())
+                except:
+                    QMessageBox.warning(self, "错误", "惩罚因子r输入格式错误")
+                    return
+            else:
+                if self.result["method"] == MethodType.penaltyMethodInterior:
+                    r = 1
+                elif self.result["method"] == MethodType.penaltyMethodExterior:
+                    r = 10
+                else:
+                    QMessageBox.warning(self, "warning", "程序错误 -1")
+                    raise ValueError("wrong way")
+            self.result["optimizationParameter"].append(r)
+            if self.c.text():
+                try:
+                    c = float(self.c.text())
+                except:
+                    QMessageBox.warning(self, "错误", "递增递减系数输入错误")
+                    return
+            else:
+                if self.result["method"] == MethodType.penaltyMethodInterior:
+                    c = 0.6
+                elif self.result["method"] == MethodType.penaltyMethodExterior:
+                    c = 8
+                else:
+                    QMessageBox.warning(self, "warning", "程序错误 -1")
+                    raise ValueError("wrong way")
+            self.result["optimizationParameter"].append(c)
+        # 指定多维无约束优化方法
+        for i, j in self.multiDimensionButton.items():
+            if i.isChecked():
+                unconsitraintMethod = j
+                break
+        self.result["optimizationParameter"].append(unconsitraintMethod)
+        # 载入初始点，可能有，也可能没有
+        if self.x0.text():
+            # 如果有
+            try:
+                x0 = list(map(int , self.x0.text().split()))
+            except:
+                QMessageBox.warning(self, "错误", "输出的初始点格式错误")
+                return
+            self.result["optimizationParameter"].append(x0)
+        return super().accept()
 
 class ProblemSwitch(QDialog):
     def __init__(self, parent=None):
