@@ -369,36 +369,49 @@ class constraintedDialog(QDialog):
 
         # 方法选择
         method = QGroupBox("优化方法")
-        methodLayout = QVBoxLayout(method)
+        methodLayout = QHBoxLayout(method)
         # 多维优化方法
         multiDimensionMethodGroup = QButtonGroup(self)
-        self.coordinateDescent = QRadioButton("坐标轮换法")
-        multiDimensionMethodGroup.addButton(self.coordinateDescent)
-        self.gradientDescent = QRadioButton("梯度法")
-        multiDimensionMethodGroup.addButton(self.gradientDescent)
-        self.dampedNewton = QRadioButton("阻尼牛顿法")
-        multiDimensionMethodGroup.addButton(self.dampedNewton)
-        self.conjugateDirection = QRadioButton("共轭方向法")
-        multiDimensionMethodGroup.addButton(self.conjugateDirection)
-        self.powell = QRadioButton("powell法")
-        multiDimensionMethodGroup.addButton(self.powell)
-        self.dfp = QRadioButton("dfp")
-        multiDimensionMethodGroup.addButton(self.dfp)
-        self.bfgs = QRadioButton("bfgs")
-        multiDimensionMethodGroup.addButton(self.bfgs)
-        self.multiDimensionButton = {
-            self.coordinateDescent: MethodType.coordinateDescent,
-            self.gradientDescent: MethodType.gradientDescent ,
-            self.dampedNewton: MethodType.dampedNewton ,
-            self.conjugateDirection: MethodType.conjugateDirection ,
-            self.powell: MethodType.powell ,
-            self.dfp: MethodType.dfp ,
-            self.bfgs: MethodType.bfgs
+        self.stochasticDirectionMethod = QRadioButton("随机方向法")
+        multiDimensionMethodGroup.addButton(self.stochasticDirectionMethod)
+        self.compositeMethod = QRadioButton("复合形法")
+        multiDimensionMethodGroup.addButton(self.compositeMethod)
+        self.penaltyMethodInterior = QRadioButton("内点罚函数法")
+        multiDimensionMethodGroup.addButton(self.penaltyMethodInterior)
+        self.methodButton = {
+            self.stochasticDirectionMethod  : MethodType.stochasticDirectionMethod,
+            self.compositeMethod            : MethodType.compositeMethod,
+            self.penaltyMethodInterior      : MethodType.penaltyMethodInterior
             }
-        for i in self.multiDimensionButton.keys():
+        for i in self.methodButton.keys():
             methodLayout.addWidget(i)
-        self.coordinateDescent.setChecked(True)
+        self.stochasticDirectionMethod.setChecked(True)
         layout.addWidget(method)
+
+        # 优化参数 主要是内点罚函数的r和c
+        optimizationPara = QGroupBox("优化参数")
+        layout.addWidget(optimizationPara)
+
+        optimizationParaLayout = QGridLayout(optimizationPara)
+        nowLine = 0
+        # 惩罚因子r
+        rLable = QLabel("惩罚因子r")
+        optimizationParaLayout.addWidget(rLable , nowLine, 0)
+        self.r = QLineEdit(self)
+        self.r.setPlaceholderText("实数")
+        optimizationParaLayout.addWidget(self.r , nowLine, 1)
+
+        nowLine += 1
+
+        # 递增/递减系数
+        cLable = QLabel("递增/递减系数")
+        optimizationParaLayout.addWidget(cLable , nowLine, 0)
+        self.c = QLineEdit(self)
+        self.c.setPlaceholderText("实数")
+        optimizationParaLayout.addWidget(self.c , nowLine, 1)
+
+        nowLine += 1
+
 
         # 确定与取消
         buttonLayout = QHBoxLayout()
