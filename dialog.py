@@ -709,7 +709,7 @@ class ProblemSwitch(QDialog):
         radio1 = QRadioButton("一维无约束凸优化（指定方向的优化）")
         radio2 = QRadioButton("多维无约束凸优化")
         radio3 = QRadioButton("多维约束优化")
-        radio4 = QRadioButton("多目标多维约束优化")
+        radio4 = QRadioButton("多目标多维约束优化（线性加权）")
         # 默认选项
         self.radios = {
             radio1:ProblemType.oneDimension,

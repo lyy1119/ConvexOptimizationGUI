@@ -1,4 +1,4 @@
-from lyy19Lib.convexOptimization import MethodType , OnedimensionOptimization , MultidimensionOptimization, ConstraintOptimization
+from lyy19Lib.convexOptimization import MethodType , OnedimensionOptimization , MultidimensionOptimization, ConstraintOptimization, MultiTargetConstraintOptimization
 from lyy19Lib.mathFunction import FractionFunction
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout , QLabel, QPushButton, QLineEdit, QMessageBox , QDialog , QRadioButton , QGridLayout , QTextEdit , QButtonGroup, QMainWindow, QMenuBar, QGroupBox, QSizePolicy
 from PyQt6.QtGui import QAction
@@ -23,6 +23,14 @@ X=
 函数值F=
 =============================
 """
+
+# 求解器、dialog、枚举类型映射表
+project = [
+    [ProblemType.oneDimension   , oneDimensionDialog    , OnedimensionOptimization      ],
+    [ProblemType.multiDimension , multiDimensionDialog  , MultidimensionOptimization    ],
+    [ProblemType.constrainted   , constraintedDialog    , ConstraintOptimization        ],
+    [ProblemType.multiTarget    , multiTargetDialog     , MultiTargetConstraintOptimization]
+]
 
 class Worker(QThread):
     log_signal = pyqtSignal(str)  # 用于实时更新log
@@ -261,8 +269,6 @@ class InputFunction(QDialog):
 class MainWidget(QWidget):
     def __init__(self):
         super().__init__()
-        # self.resize(600, 450)  # 初始大小
-        # self.aspect_ratio = 4 / 3  # 设定固定比例 (4:3)
         self.initUI() # 布局设计
         self.problem = None
 
@@ -271,10 +277,6 @@ class MainWidget(QWidget):
         布局设计
         '''
         layout = QVBoxLayout() # 总布局为垂直布局
-
-        self.InputButton = QPushButton("输入优化问题", self)
-        self.InputButton.clicked.connect(self.get_input_function_dialog)  # 绑定点击事件
-        layout.addWidget(self.InputButton)
 
         self.inpuLable = QLabel("输入模型:")
         layout.addWidget(self.inpuLable)
@@ -285,20 +287,12 @@ class MainWidget(QWidget):
         layout.addWidget(self.inputInfo)
 
         # 结果
+        label = QLabel("结果:")
+        layout.addWidget(label)
         self.outputInfo = QTextEdit(self)
         self.outputInfo.setReadOnly(True)
         self.outputInfo.setText(defaultOutPutText)
         layout.addWidget(self.outputInfo)
-
-        # 优化按钮与log按钮
-        buttonLayout = QHBoxLayout()
-        self.optimizeButton = QPushButton("优化")
-        self.optimizeButton.clicked.connect(self.start_optimization)
-        buttonLayout.addWidget(self.optimizeButton)
-        self.saveLogButton = QPushButton("导出log")
-        self.saveLogButton.clicked.connect(self.save_log)
-        buttonLayout.addWidget(self.saveLogButton)
-        layout.addLayout(buttonLayout)
 
         self.setLayout(layout)
         self.setWindowTitle("无约束凸优化")
@@ -336,32 +330,6 @@ class MainWidget(QWidget):
         if self.my_instance:
             result = getattr(self.my_instance, method_name)()
             self.result_label.setText(f"结果: {result}")
-    
-    def get_input_function_dialog(self):
-        '''
-        调用窗口，输入函数
-        '''
-        dialog = InputFunction(self)
-        if dialog.exec():
-            input = dialog.get_input()
-            # 初始化self.problem
-            t = input["type"]
-            function = input["function"]
-            x0 = input["x0"]
-            epsilonx = input["epsilonx"]
-            epsilonf = input["epsilonf"]
-            s = input["s"]
-            self.method = input["method"]
-            maxStep = input["maxStep"]
-            if t == ProblemType.oneDimension:
-                self.problem = OnedimensionOptimization(function , x0 , s , epsilonx , epsilonf , maxStep)
-            else:
-                self.problem = MultidimensionOptimization(function , x0 , epsilonx , epsilonf , maxStep)
-            # 合成信息
-            inputInfo = f"函数：{self.problem.function}\n初始点：\n{self.problem.x0}\nepsilon x：{epsilonx}\nepsilon f：{epsilonf}\nmaxStep：{maxStep}"
-            if t == ProblemType.oneDimension:
-                inputInfo += f"\nS：\n{self.problem.s}"
-            self.inputInfo.setText(inputInfo)
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -377,6 +345,9 @@ class MainWindow(QMainWindow):
         self.create_menu_bar()
         self.setCentralWidget(MainWidget())
 
+        # 存储优化程序
+        self.problem = None
+
     def create_menu_bar(self):
         menuBar = self.menuBar()
 
@@ -390,6 +361,23 @@ class MainWindow(QMainWindow):
         exitAction = QAction("退出", self)
         exitAction.triggered.connect(self.close)
         fileMenu.addAction(exitAction)
+
+        runMenu = menuBar.addMenu("运行(&R)")
+
+        runAction = QAction("求解优化模型", self)
+        runAction.setShortcut("Ctrl+R")
+        # runAction.triggered.connect()
+        runMenu.addAction(runAction)
+
+        dataMenu = menuBar.addMenu("数据(&O)")
+
+        logAction = QAction("查看运行日志", self)
+        logAction.setShortcut("Ctrl+L")
+        dataMenu.addAction(logAction)
+
+        saveAction = QAction("保存日志", self)
+        saveAction.setShortcut("Ctrl+O")
+        dataMenu.addAction(saveAction)
 
     def create_optimization_entity(self):
         # 选则创建哪种优化问题
@@ -408,9 +396,11 @@ class MainWindow(QMainWindow):
 
                 if inputDialog.exec() == QDialog.DialogCode.Rejected:
                     continue
-                else: # 初始化
+                else:
+                    # 输入成功，初始化求解器
+                    # 初始化
                     print(inputDialog.result)
-
+                    
                     break
             else:
                 break
