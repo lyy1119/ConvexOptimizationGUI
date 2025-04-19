@@ -1,3 +1,3 @@
 default:
 	pip install -r requirements.txt
-	pyinstaller --onefile --noconsole main.py
+	pyinstaller --onefile --noconsole -n convexOptimization main.py
