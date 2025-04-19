@@ -508,6 +508,15 @@ class multiTargetDialog(QDialog):
         
         nowLine += 1
 
+        # 权重
+        wLabel = QLabel("权重")
+        parameterLayout.addWidget(wLabel , nowLine, 0)
+        self.w = QLineEdit(self)
+        self.w.setPlaceholderText("空格分隔  1.0 1.0")
+        parameterLayout.addWidget(self.w , nowLine, 1)
+
+        nowLine += 1
+
         # gu
         guLable = QLabel("gu(X)")
         guLable.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -606,13 +615,22 @@ class multiTargetDialog(QDialog):
 
     def accept(self):
         self.result = {}
-        # 验证函数
+        # 验证函数,多个
+        functions = self.function.get_values()
         try:
-            f = FractionFunction(self.function.text())
+            functions = [FractionFunction(i) for i in functions]
         except:
-            QMessageBox.warning(self, "输入错误", "输入的函数无法解析，请检查函数")
+            QMessageBox.warning(self, "输入错误", f"输入函数不合法")
             return
-        self.result["function"] = f
+        dimension = 0
+        for i in functions:
+            dimension = max(dimension, i.dimension)
+        # 验证权重
+        w = self.w.text().split()
+        if len(w) != len(functions):
+            QMessageBox.warning(self, "输入错误", "输入的权重数量小于输入的函数数量")
+            return
+        self.result["function"] = [[functions[i], float(w[i])] for i in range(len(w))]
         # 验证gu
         gu = self.gu.get_values()
         gu = [FractionFunction(i) for i in gu]
@@ -623,7 +641,7 @@ class multiTargetDialog(QDialog):
             except:
                 QMessageBox.warning(self, "输入错误", f"不等式约束{index+1}不合法")
                 return
-        if maxDimension > f.dimension:
+        if maxDimension > dimension:
             QMessageBox.warning(self, "输入错误", "不等式约束的最大维度大于函数维度")
             return
         else:
@@ -638,13 +656,12 @@ class multiTargetDialog(QDialog):
             except:
                 QMessageBox.warning(self, "输入错误", f"等式约束{index+1}不合法")
                 return
-        if maxDimension > f.dimension:
+        if maxDimension > dimension:
             QMessageBox.warning(self, "输入错误", "等式约束的最大维度大于函数维度")
             return
         else:
             self.result["hv"] = hv
         # 验证初始点
-        dimension = f.dimension
         if len(self.x0.text().split()) != dimension:
             QMessageBox.warning(self,  "输入错误", "输入的初始点和函数维度不符")
             return
