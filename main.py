@@ -24,12 +24,6 @@ X=
 =============================
 """
 
-class ProblemType(Enum):
-    oneDimension = 0
-    multiDimension = 1
-    constrainted = 2
-    mutiTarget = 4
-
 class Worker(QThread):
     log_signal = pyqtSignal(str)  # 用于实时更新log
     result_signal = pyqtSignal(str)  # 用于传递最终结果
