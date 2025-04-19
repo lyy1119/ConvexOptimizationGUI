@@ -402,9 +402,11 @@ class MainWindow(QMainWindow):
                 # print(dialog.result)
                 if dialog.result == ProblemType.oneDimension:
                     inputDialog = oneDimensionDialog(self)
+                elif dialog.result == ProblemType.multiDimension:
+                    inputDialog = multiDimensionDialog(self)
                 if inputDialog.exec() == QDialog.DialogCode.Rejected:
                     continue
-                else:
+                else: # 初始化
                     print(inputDialog.result)
                     break
             else:
