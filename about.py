@@ -53,7 +53,7 @@ class AboutDialog(QDialog):
         infoInnerLayout.addWidget(appNameLabel)
         
         # 版本
-        versionLabel = QLabel("版本: 1.0.0")  # 替换为你的版本号
+        versionLabel = QLabel("版本: 1.0.2")  # 替换为你的版本号
         versionLabel.setFont(appNameFont)
         infoInnerLayout.addWidget(versionLabel)
         
