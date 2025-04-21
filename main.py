@@ -247,6 +247,9 @@ class MainWindow(QMainWindow):
         self.widget.set_output(f"{self.problem.res}")
 
     def solve(self):
+        if not self.problem:
+            QMessageBox.information(self, "提示", "请先创建优化模型")
+            return 0
         method = self.method
         try:
             if self.optimizationPara:
@@ -274,6 +277,9 @@ class MainWindow(QMainWindow):
         self.worker.start()  # 启动线程
 
     def show_log_window(self):
+        if not self.problem:
+            QMessageBox.information(self, "提示", "请先创建优化模型")
+            return 0
         LogDialog = LogWindow()
         LogDialog.text_edit.setText(f"{self.problem.logs}")
 
@@ -282,6 +288,9 @@ class MainWindow(QMainWindow):
     
     def save_logs(self):
         # 打开文件选择对话框
+        if not self.problem:
+            QMessageBox.information(self, "提示", "请先创建优化模型")
+            return 0
         filePath, _ = QFileDialog.getSaveFileName(
             self,  # 父窗口
             "选择保存位置",  # 标题
