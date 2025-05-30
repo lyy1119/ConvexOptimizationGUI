@@ -1,6 +1,8 @@
 # ConvexOptimizationGUI
 无约束凸优化GUI程序 
 
+求解器代码主要来自[lyy1119/PythonLib](https://github.com/lyy1119/PythonLib)
+
 ## 已实现功能
 
 已经实现以下功能的GUI程序，包括：  
